@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "sql_chatbot"
+version = "0.1.0"
+description = ""
+authors = ["David Carricondo Sánchez <dacsmail00@gmail.com>"]
+readme = "README.md"
+# packages = [{include = "sql_chatbot"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pytest = "^8.3.3"
+pydantic = "^2.9.2"
+langchain = "^0.3.7"
+langchain-community = "^0.3.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
