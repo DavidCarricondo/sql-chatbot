@@ -12,6 +12,7 @@ pytest = "^8.3.3"
 pydantic = "^2.9.2"
 langchain = "^0.3.7"
 langchain-community = "^0.3.7"
+llama-cpp-python = "^0.3.2"
 
 
 [build-system]
