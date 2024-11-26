@@ -10,7 +10,8 @@ class LlmModel:
             self,
             callback_manager: CallbackManager = CallbackManager([StreamingStdOutCallbackHandler()]),
             temperature: float = 0.3,
-            max_tokens: int = 2000
+            max_tokens: int = 2000,
+            use_gpu: bool = False
             ):
         llm = LlamaCpp(
             model_path=self.model_path,
@@ -19,11 +20,14 @@ class LlmModel:
             top_p=1,
             callback_manager=callback_manager,
             verbose=True,  # Verbose is required to pass to the callback manager
+            #use_gpu=use_gpu  # Enable GPU usage
+            #n_gpu_layers = -1  # The number of layers to put on the GPU. The rest will be on the CPU. If you don't know how many layers there are, you can use -1 to move all to GPU.
+            #n_batch = 512  # Should be between 1 and n_ctx, consider the amount of VRAM in your GPU.
             )
         self.llm = llm
 
     @staticmethod
-    def set_prompt_template(self, template):
+    def set_prompt_template(template = None):
 
         if template is None:
             template = """Question: {question}
@@ -31,11 +35,11 @@ class LlmModel:
 
         return PromptTemplate.from_template(template)
 
-    def invoke_llm(self, prompt, template=None):
+    def invoke(self, prompt, template=None):
         try:
             template = self.set_prompt_template(template=None)
-            template.format(question=prompt)
-            response = self.llm.invoke(prompt=template)
+            prompt = template.format(question=prompt)
+            response = self.llm.invoke(input=prompt)
             return response
         except Exception as e:
             return str(e)
