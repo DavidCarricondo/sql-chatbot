@@ -9,7 +9,7 @@ class LlmModel:
     def load_llm(
             self,
             callback_manager: CallbackManager = CallbackManager([StreamingStdOutCallbackHandler()]),
-            temperature: float = 0.3,
+            temperature: float = 0.1,
             max_tokens: int = 2000,
             use_gpu: bool = False
             ):
@@ -34,6 +34,11 @@ class LlmModel:
                 Answer: Let's work this out in a step by step way to be sure we have the right answer."""
 
         return PromptTemplate.from_template(template)
+    
+    def generate_api_request(self, prompt):
+        # Generar solicitudes para el API (extraer ciudad)
+        return self._run_llama(f"Extrae la ciudad de la siguiente pregunta: {prompt}")
+
 
     def invoke(self, prompt, template=None):
         try:

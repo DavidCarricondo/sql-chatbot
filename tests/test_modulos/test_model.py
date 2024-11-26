@@ -1,5 +1,5 @@
 import pytest
-from sql_chatbot.model import LlmModel
+from sql_chatbot.modulos.model import LlmModel
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain_core.prompts import PromptTemplate
 
