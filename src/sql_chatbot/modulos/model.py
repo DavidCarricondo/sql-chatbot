@@ -3,7 +3,12 @@ from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHan
 from langchain_core.prompts import PromptTemplate
 
 class LlmModel:
-    def __init__(self, model_path):
+    def __init__(self, model_path: str):
+        """
+        A class used to represent a Language Model (LLM) and interact with it.
+        Args:
+            model_path : The path to the model file.
+        """
         self.model_path = model_path
 
     def load_llm(
@@ -13,6 +18,14 @@ class LlmModel:
             max_tokens: int = 2000,
             use_gpu: bool = False
             ):
+        """
+        Loads the LLM with the specified parameters.
+        Args:
+            callback_manager : The callback manager to handle streaming output (default is CallbackManager([StreamingStdOutCallbackHandler()])).
+            temperature : The temperature to use for sampling (default is 0.1).
+            max_tokens :The maximum number of tokens to generate (default is 2000).
+            use_gpu : Whether to use GPU for inference (default is False).
+        """
         llm = LlamaCpp(
             model_path=self.model_path,
             temperature=temperature,
@@ -28,19 +41,36 @@ class LlmModel:
 
     @staticmethod
     def set_prompt_template(template = None):
-
+       
         if template is None:
             template = """Question: {question}
                 Answer: Let's work this out in a step by step way to be sure we have the right answer."""
 
         return PromptTemplate.from_template(template)
     
+    ## TODO: Test and improve this function
     def generate_api_request(self, prompt):
-        # Generar solicitudes para el API (extraer ciudad)
-        return self._run_llama(f"Extrae la ciudad de la siguiente pregunta: {prompt}")
+        """
+        Generates an API request to extract the city from the given prompt.
+        Args:
+        
+            prompt : str
+                The prompt containing the question.
+        Return:
+            Does the question refers to the NASA picture of the day?
+        """
+        return self._run_llama(f"Does the question refers to the NASA picture of the day?: {prompt}. Answer: [True, False]")
 
 
     def invoke(self, prompt, template=None):
+        """
+        Invoke the model given a prompt and a template.
+        Args:
+            prompt : The prompt containing the question.
+            template : The template to use for the prompt.
+        Return:
+            The answer of the model
+        """
         try:
             template = self.set_prompt_template(template=None)
             prompt = template.format(question=prompt)
