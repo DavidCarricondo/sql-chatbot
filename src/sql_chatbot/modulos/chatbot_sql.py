@@ -70,7 +70,7 @@ class SQLChatbot:
         - Casting to the correct data type
         - Using the proper columns for joins
 
-        If there are any of the above mistakes, rewrite the query.
+        If there are any mistakes, rewrite the query.
         If there are no mistakes, just reproduce the original query with no further commentary.
 
         Respond exclusively in a JSON object with the following format:
@@ -80,11 +80,15 @@ class SQLChatbot:
         }}
         
         Never include explanations or additional text, only the JSON.
+        query: {query}
         """
 
-        prompt = ChatPromptTemplate.from_messages(
-            [("system", system), ("human", "{query}")]
-        ).partial(dialect=self.db.dialect)
+#        prompt = ChatPromptTemplate.from_messages(
+#            [("system", system), ("human", "{query}")]
+#        ).partial(dialect=self.db.dialect)
+        import pdb; pdb.set_trace()
+        prompt = PromptTemplate.from_template(system).partial(dialect=self.db.dialect)
+
 
         parser = JsonOutputParser(pydantic_object=OutputSqlJson)
 
@@ -93,14 +97,14 @@ class SQLChatbot:
         full_chain = {"query": chain} | validation_chain    
         
         result = full_chain.invoke(question)
-        
+        print(result)
         return result
 
     def run_query(self, query: str) -> str:
         con = sqlite3.connect('/home/dacs00/projects/sql-chatbot/db/dataset01.db')
         df = pd.read_sql_query(query["SQLQuery"], con)
         con.close()
-        return {"SQLQuery": query,
+        return {"SQLQuery": query["SQLQuery"],
                 "ANSWER": df.to_string(index=False)
                 }
     
@@ -109,6 +113,7 @@ class SQLChatbot:
             response = self.invoke_sql_chain_with_validation(question)
         else:
             response = self.invoke_sql_chain(question)
+            response = {"SQLQuery": response}
         return self.run_query(response)
 
 
@@ -116,10 +121,10 @@ if __name__ == "__main__":
     chatbot = SQLChatbot(db_uri="sqlite:////home/dacs00/projects/sql-chatbot/db/dataset01.db", 
                          model_path="../models/Meta-Llama-3-8B-Instruct.Q4_0.gguf"
                          )
-    question = {"question": "Cuanto es la suma de todos los importes?"} #"Cuantos clientes hay?"
+    question = {"question": "Cuanto es la suma de todos los importes?"} # #"Cuantos clientes hay?"
     response = chatbot.run(
         question, 
-        validation=True
+        validation=False
         )
     print("*** Response ***")
     print(response)
