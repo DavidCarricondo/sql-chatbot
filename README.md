@@ -65,4 +65,5 @@ make test
 * Loggings and traceability
 * Acceptance testing
 * Test other APIs
+* Add CI/CD in the repo 
 * Dockerize for cloud deployment
