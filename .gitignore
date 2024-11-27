@@ -1,5 +1,6 @@
 .env
 .envrc
 .ipynb_checkpoints
-.venv
+.venv/
 __pycache__/
+.pytest_cache/
