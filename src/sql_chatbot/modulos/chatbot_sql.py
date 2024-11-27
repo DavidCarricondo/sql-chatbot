@@ -1,11 +1,11 @@
 from langchain_community.utilities import SQLDatabase
 from langchain.chains import create_sql_query_chain
-from sql_chatbot.modulos.model import LlmModel
-from langchain_core.prompts import PromptTemplate
-from typing import Optional
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from sql_chatbot.types_ import OutputSqlJson
+from sql_chatbot.config import template_sql, template_sql_validation
+from sql_chatbot.modulos.model import LlmModel
+from typing import Optional
 import re
 import pandas as pd
 import sqlite3
@@ -48,18 +48,8 @@ class SQLChatbot:
             PromptTemplate: The loaded prompt template.
         """
         if template is None:
-            template = '''Given a question, create a syntactically correct {dialect} query to run. With {top_k} results per select statement.
-            Use the following format:
+            template = template_sql
 
-            Question: "Question here"
-            SQLQuery: "SQL Query to run"
-            SQLResult: "Result of the SQLQuery"
-
-            Only use the following tables:
-
-            {table_info}.
-
-            Question: {input}'''
         return PromptTemplate.from_template(template)
 
     def load_llm_model(self) -> LlmModel:
@@ -104,43 +94,21 @@ class SQLChatbot:
         chain = self.load_sql_chain()
         llm = self.load_llm_model()
 
-        system = """Double check the user's {dialect} query for common mistakes, including:
-        - Using NOT IN with NULL values
-        - Using UNION when UNION ALL should have been used
-        - Using BETWEEN for exclusive ranges
-        - Data type mismatch in predicates
-        - Properly quoting identifiers
-        - Using the correct number of arguments for functions
-        - Casting to the correct data type
-        - Using the proper columns for joins
-
-        If there are any mistakes, rewrite the query.
-        If there are no mistakes, just reproduce the original query with no further commentary.
-
-        Respond exclusively in a JSON object with the following format:
-
-        {{
-            "SQLQuery": "corrected query",
-        }}
-        
-        Never include explanations or additional text, only the JSON.
-        query: {query}
-        """
+        system = template_sql_validation
 
 #        prompt = ChatPromptTemplate.from_messages(
 #            [("system", system), ("human", "{query}")]
 #        ).partial(dialect=self.db.dialect)
         prompt = PromptTemplate.from_template(system).partial(dialect=self.db.dialect)
 
-
         parser = JsonOutputParser(pydantic_object=OutputSqlJson)
 
         validation_chain = prompt | llm | self.parse_result | parser
 
         full_chain = {"query": chain} | validation_chain    
-        
+
         result = full_chain.invoke(question)
-        print(result)
+
         return result
 
     def run_query(self, query: str) -> str:
@@ -154,6 +122,7 @@ class SQLChatbot:
         con = sqlite3.connect('/home/dacs00/projects/sql-chatbot/db/dataset01.db')
         df = pd.read_sql_query(query["SQLQuery"], con)
         con.close()
+
         return {"SQLQuery": query["SQLQuery"],
                 "ANSWER": df.to_string(index=False)
                 }
