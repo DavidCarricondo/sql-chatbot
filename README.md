@@ -60,7 +60,7 @@ make test
 
 * Fine-tune embedding model to improve the router
 * Cache keywords embeddings
-* Test NER and or LLM in the router for more complex APIs
+* Test NER (Gliner if very complex?) and or LLM in the router for more complex APIs
 * Few shot learning for LLMs
 * Loggings and traceability
 * Acceptance testing
