@@ -51,7 +51,18 @@
 
 ## Testing
 
-Run the tests using `pytest`:
+Run the tests using `pytest`:  
 ```sh
 make test
 ```
+
+## TO DOs / IMPROVEMENTS
+
+* Fine-tune embedding model to improve the router
+* Cache keywords embeddings
+* Test NER and or LLM in the router for more complex APIs
+* Few shot learning for LLMs
+* Loggings and traceability
+* Acceptance testing
+* Test other APIs
+* Dockerize for cloud deployment
