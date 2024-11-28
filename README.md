@@ -65,5 +65,6 @@ make test
 * Loggings, pydantic validation, and traceability
 * Acceptance testing
 * Test other APIs
+* Make it model agnostic (seamless model testing) / Only one model instatiation
 * Add CI/CD in the repo 
 * Dockerize for cloud deployment
