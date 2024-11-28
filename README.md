@@ -62,7 +62,9 @@ make test
 * Cache keywords embeddings
 * Test NER (Gliner if very complex?) and or LLM in the router for more complex APIs
 * Few shot learning for LLMs
-* Loggings and traceability
+* Loggings, pydantic validation, and traceability
 * Acceptance testing
 * Test other APIs
+* Make it model agnostic (seamless model testing) / Only one model instatiation
+* Add CI/CD in the repo 
 * Dockerize for cloud deployment
