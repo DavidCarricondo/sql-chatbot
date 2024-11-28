@@ -154,9 +154,15 @@ class SQLChatbot:
         con = sqlite3.connect('/home/dacs00/projects/sql-chatbot/db/dataset01.db')
         df = pd.read_sql_query(query["SQLQuery"], con)
         con.close()
-        return {"SQLQuery": query["SQLQuery"],
-                "ANSWER": df.to_string(index=False)
+        if df.empty:
+            return {
+                "SQLQuery": query["SQLQuery"],
+                "ANSWER": "La llamada no devolvió resultados, considera reescribir la pregunta."
                 }
+        return {
+            "SQLQuery": query["SQLQuery"],
+            "ANSWER": df.to_string(index=False)
+            }
     
     def run(self, question:dict, validation: bool = True):
         """
