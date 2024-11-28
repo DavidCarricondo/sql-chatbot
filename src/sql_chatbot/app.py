@@ -31,7 +31,10 @@ async def ask(question_request: QuestionRequest):
                          model_path="../models/Meta-Llama-3-8B-Instruct.Q4_0.gguf"
                          )
     try:
-        response = sql_.run(user_input, validation=False)
+        response = sql_.run(
+            user_input, 
+            validation=False
+            )
     except Exception as e:
         response = str(e)
     return templates.TemplateResponse(

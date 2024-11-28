@@ -60,11 +60,13 @@ make test
 
 * Fine-tune embedding model to improve the router
 * Cache keywords embeddings
+* <del> Initialise the llm only once in validation </del>
 * Test NER (Gliner if very complex?) and or LLM in the router for more complex APIs
 * Few shot learning for LLMs
 * Loggings, pydantic validation, and traceability
 * Acceptance testing
+* Adding LLM guardrails
 * Test other APIs
-* Make it model agnostic (seamless model testing) / Only one model instatiation
+* Make it model agnostic (seamless model testing) 
 * Add CI/CD in the repo 
 * Dockerize for cloud deployment
