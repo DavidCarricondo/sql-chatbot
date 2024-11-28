@@ -20,6 +20,7 @@ class SQLChatbot:
         """
         self.db = SQLDatabase.from_uri(db_uri)
         self.model_path = model_path
+        self.model = None
 
     @staticmethod
     def parse_result(text: str) -> str:
@@ -60,17 +61,20 @@ class SQLChatbot:
         """
         llm_model = LlmModel(model_path=self.model_path)
         llm_model.load_llm()
-        return llm_model.llm
+        self.model = llm_model.llm
 
-    def load_sql_chain(self) -> create_sql_query_chain:
+    def load_sql_chain(self, validation: bool=False) -> create_sql_query_chain:
         """
         Loads the SQL query chain.
         Returns:
             create_sql_query_chain: The created SQL query chain.
         """
-        llm = self.load_llm_model()
+        if self.model is None:
+            self.load_llm_model()
+        if validation:
+                return create_sql_query_chain(self.model, self.db)
         prompt = self.load_sql_template()
-        return create_sql_query_chain(llm, self.db, prompt, k=1)
+        return create_sql_query_chain(self.model, self.db, prompt, k=1)
 
     def invoke_sql_chain(self, question: dict) -> str:
         """
@@ -91,19 +95,18 @@ class SQLChatbot:
         Returns:
             str: The validated SQL query.
         """
-        chain = self.load_sql_chain()
-        llm = self.load_llm_model()
 
-        system = template_sql_validation
+        self.load_llm_model()
+        chain = self.load_sql_chain(validation=False)
 
 #        prompt = ChatPromptTemplate.from_messages(
 #            [("system", system), ("human", "{query}")]
 #        ).partial(dialect=self.db.dialect)
-        prompt = PromptTemplate.from_template(system).partial(dialect=self.db.dialect)
+        prompt = PromptTemplate.from_template(template_sql_validation).partial(dialect=self.db.dialect)
 
         parser = JsonOutputParser(pydantic_object=OutputSqlJson)
 
-        validation_chain = prompt | llm | self.parse_result | parser
+        validation_chain = prompt | self.model | self.parse_result | parser
 
         full_chain = {"query": chain} | validation_chain    
 
@@ -120,12 +123,19 @@ class SQLChatbot:
             str: The result of the SQL query.
         """
         con = sqlite3.connect('/home/dacs00/projects/sql-chatbot/db/dataset01.db')
-        df = pd.read_sql_query(query["SQLQuery"], con)
-        con.close()
-
-        return {"SQLQuery": query["SQLQuery"],
-                "ANSWER": df.to_string(index=False)
+        try:
+            df = pd.read_sql_query(query["SQLQuery"], con)
+        except Exception:
+            con.close()
+            return {
+                "SQLQuery": "",
+                "ANSWER": "La llamada no devolvió resultados, considera reescribir la pregunta."
                 }
+        con.close()
+        return {
+            "SQLQuery": query["SQLQuery"],
+            "ANSWER": df.to_string(index=False)
+            }
     
     def run(self, question:dict, validation: bool = True):
         """
@@ -148,7 +158,7 @@ if __name__ == "__main__":
     chatbot = SQLChatbot(db_uri="sqlite:////home/dacs00/projects/sql-chatbot/db/dataset01.db", 
                          model_path="../models/Meta-Llama-3-8B-Instruct.Q4_0.gguf"
                          )
-    question = {"question": "Cuanto es la suma de todos los importes?"} # #"Cuantos clientes hay?"
+    question = {"question": "que tipo de productos compra cada cliente?"} #"Cuanto es la suma de todos los importes?"} # #"Cuantos clientes hay?"
     response = chatbot.run(
         question, 
         validation=False
